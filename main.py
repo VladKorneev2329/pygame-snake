@@ -1,3 +1,6 @@
+from sys import exit
+import time
+from random import randrange
 import pygame
 from colors import *
 
@@ -7,11 +10,13 @@ def check_event():
     Отслеживает нажатые клавиши
     :return: None
     """
-    global snake_directions
+    global snake_directions, game_flag
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
+            exit()
+
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_ESCAPE]:
@@ -46,6 +51,7 @@ def check_event():
         }
 
 
+
 display_size = display_width, display_height = 800, 800
 display_title = 'Snake'
 display_fps = 5
@@ -55,7 +61,8 @@ snake_x = display_width // 2
 snake_y = display_height // 2
 snake_width = display_pixel
 snake_height = display_pixel
-snake_size = []
+snake_len = 1
+snake_body = []
 snake_directions = {
     'direction_up': True,
     'direction_down': False,
@@ -63,23 +70,16 @@ snake_directions = {
     'direction_left': False
 }
 
+food_x = randrange(0, 39) * display_pixel
+food_y = randrange(0, 39) * display_pixel
+
 pygame.init()
 display = pygame.display.set_mode(display_size)
 pygame.display.set_caption(display_title)
 
-for row in range(display_height // display_pixel):
-    for col in range(display_width // display_pixel):
-        if (row + col) % 2 == 0:
-            color = color_thistle
-        else:
-            color = color_silver
-        pygame.draw.rect(display, color,
-                         (0 + display_pixel * col, 0 + display_pixel * row, display_pixel, display_pixel))
-
 while True:
 
     check_event()
-    print(snake_directions)
 
     if snake_directions['direction_up']:
         snake_y -= display_pixel
@@ -95,11 +95,45 @@ while True:
     elif snake_x > display_width - snake_width:
         snake_x = 0
     elif snake_y < 0:
-        snake_y = display_height + snake_height
-    elif snake_y > display_height:
+        snake_y = display_height - snake_height
+    elif snake_y > display_height - snake_height:
         snake_y = 0
 
-    pygame.draw.rect(display, color_lime, (snake_x, snake_y, snake_width, snake_height))
+    for row in range(display_height // display_pixel):
+        for col in range(display_width // display_pixel):
+            if (row + col) % 2 == 0:
+                color = color_thistle
+            else:
+                color = color_silver
+            pygame.draw.rect(display, color,
+                             (0 + display_pixel * col, 0 + display_pixel * row, display_pixel, display_pixel))
+
+    if food_x == snake_x and food_y == snake_y:
+        food_x = randrange(0, 39) * display_pixel
+        food_y = randrange(0, 39) * display_pixel
+        display_fps += 1
+        snake_len += 1
+        print('lvl {0}'.format(snake_len))
+    display.blit(pygame.font.SysFont(None, 20).render('Очки: {0}'.format(snake_len-1), True, color_red), (0, 0))
+    pygame.display.update()
+    snake_head = []
+    snake_head.append(snake_x)
+    snake_head.append(snake_y)
+    snake_body.append(snake_head)
+    if len(snake_body) > snake_len:
+        del snake_body[0]
+    for snake_block in snake_body[:-1]:
+        if snake_block == snake_head:
+            time.sleep(2)
+            pygame.quit()
+            exit()
+
+    for snake_block in snake_body:
+        pygame.draw.rect(display, color_lime, (snake_block[0], snake_block[1], snake_width, snake_height))
+
+    pygame.display.update()
+
+    pygame.draw.rect(display, color_red, (food_x, food_y, display_pixel, display_pixel))
 
     pygame.display.flip()
     pygame.time.Clock().tick(display_fps)
