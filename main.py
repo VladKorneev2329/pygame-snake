@@ -9,7 +9,7 @@ def check_event():
     Отслеживает нажатые клавиши
     :return: None
     """
-    global snake_directions, snake_x, snake_y, snake_body, snake_len, score, f, food_y, food_x
+    global snake_directions, snake_x, snake_y, snake_body, snake_len, score, f, food_y, food_x, display_fps
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
