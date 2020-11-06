@@ -1,151 +1,133 @@
-from sys import exit
-from random import randrange
-import pygame
-from colors import *
+import sys
+import random
+import pygame as pg
 
 
-def check_event():
-    """
-    Отслеживает нажатые клавиши
-    :return: None
-    """
-    global snake_directions, snake_x, snake_y, snake_body, snake_len, score, f, food_y, food_x, display_fps
+class App:
+    """Класс окна приложения"""
 
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            exit()
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_ESCAPE]:
-        pygame.quit()
-    if keys[pygame.K_r]:
-        f = False
-        score = 0
-        food_x = randrange(0, 39) * display_pixel
-        food_y = randrange(0, 39) * display_pixel
-        display_fps = 20
-        snake_len = 1
-        snake_body = []
-        snake_x = display_width // 2
-        snake_y = display_height // 2
+    def __init__(self, WIDTH: int = 800, HEIGHT: int = 800):
+        """Инициализирует настройки приложения"""
 
-    if keys[pygame.K_UP] or keys[pygame.K_w] and not snake_directions['direction_down']:
-        snake_directions = {
-            'direction_up': True,
-            'direction_down': False,
-            'direction_right': False,
-            'direction_left': False
-        }
-    if keys[pygame.K_DOWN] or keys[pygame.K_s] and not snake_directions['direction_up']:
-        snake_directions = {
-            'direction_up': False,
-            'direction_down': True,
-            'direction_right': False,
-            'direction_left': False
-        }
-    if keys[pygame.K_RIGHT] or keys[pygame.K_d] and not snake_directions['direction_left']:
-        snake_directions = {
-            'direction_up': False,
-            'direction_down': False,
-            'direction_right': True,
-            'direction_left': False
-        }
-    if keys[pygame.K_LEFT] or keys[pygame.K_a] and not snake_directions['direction_right']:
-        snake_directions = {
-            'direction_up': False,
-            'direction_down': False,
-            'direction_right': False,
-            'direction_left': True
-        }
+        # Инициализирует настроки экрана
+        self.WIDTH = WIDTH
+        self.HEIGHT = HEIGHT
+        self.PIXEL = 20
+        self.FPS = 5
+        self._clock = pg.time.Clock()
+
+        # Инициализирует библеотеку pygame и вызывает главное окно
+        pg.init()
+        self.ICON = pg.image.load('images/icon.png')
+        pg.display.set_icon(self.ICON)
+        self.DISPLAY = pg.display.set_mode((self.WIDTH, self.HEIGHT))
+        pg.display.set_caption('Змейка')
+
+        # Создание экзепляра Змейки
+        self.snake = Snake(self.PIXEL)
+
+        # Создание экземпляра Еды
+        self.food = Food(self.DISPLAY, self.PIXEL)
+
+    def run(self):
+        """Главный цикл приложения"""
+        while True:
+            self.check_event()
+            self.draw()
+
+            pg.display.flip()
+            self._clock.tick(self.FPS)
+
+    def check_event(self):
+        [sys.exit() for event in pg.event.get() if event.type == pg.QUIT]
+
+        keys = pg.key.get_pressed()
+        if keys[pg.K_UP]:
+            self.snake.get_direction('up')
+        elif keys[pg.K_DOWN]:
+            self.snake.get_direction('down')
+        elif keys[pg.K_LEFT]:
+            self.snake.get_direction('left')
+        elif keys[pg.K_RIGHT]:
+            self.snake.get_direction('right')
+
+    def draw(self):
+        """Отображает на экране объекте"""
+
+        # Фон
+        self.DISPLAY.fill((55, 55, 55))
+        for pos_x in range(0, self.HEIGHT, self.PIXEL):
+            pg.draw.line(self.DISPLAY, (22, 22, 22), (pos_x, 0), (pos_x, self.HEIGHT))
+
+        for pos_y in range(0, self.WIDTH, self.PIXEL):
+            pg.draw.line(self.DISPLAY, (22, 22, 22), (0, pos_y), (self.WIDTH, pos_y))
+
+        # Отрисовка еды
+        self.food.draw()
+
+        # Отрисовка змейки
+        self.snake.draw(self.DISPLAY)
 
 
-display_size = display_width, display_height = 800, 800
-display_title = 'Snake'
-display_fps = 5
-display_pixel = 20
+class Snake:
+    """Объект змейки"""
 
-snake_x = display_width // 2
-snake_y = display_height // 2
-snake_width = display_pixel
-snake_height = display_pixel
-snake_len = 1
-snake_body = []
-snake_directions = {
-    'direction_up': True,
-    'direction_down': False,
-    'direction_right': False,
-    'direction_left': False
-}
+    def __init__(self, PIXEL):
+        """Инициализирует главные характеристики змейки"""
+        self.SIZE = PIXEL
+        self.COLOR = (0, 230, 118)
 
-food_x = randrange(0, 39) * display_pixel
-food_y = randrange(0, 39) * display_pixel
+        # Координаты змейки
+        self.pos_x = 0
+        self.pos_y = 0
 
-score = 0
+        # Направление змейки
+        self.direction = 'down'
 
-pygame.init()
-display = pygame.display.set_mode(display_size)
-pygame.display.set_caption(display_title)
+    def move(self):
 
-while True:
+        if self.direction == 'up':
+            self.pos_y -= self.SIZE
+        elif self.direction == 'down':
+            self.pos_y += self.SIZE
+        elif self.direction == 'left':
+            self.pos_x -= self.SIZE
+        elif self.direction == 'right':
+            self.pos_x += self.SIZE
 
-    check_event()
 
-    if snake_directions['direction_up']:
-        snake_y -= display_pixel
-    if snake_directions['direction_down']:
-        snake_y += display_pixel
-    if snake_directions['direction_right']:
-        snake_x += display_pixel
-    if snake_directions['direction_left']:
-        snake_x -= display_pixel
+    def draw(self, DISPLAY):
+        self.move()
+        pg.draw.rect(DISPLAY, self.COLOR, (self.pos_x, self.pos_y, self.SIZE, self.SIZE))
 
-    if snake_x < 0:
-        snake_x = display_width
-    elif snake_x > display_width - snake_width:
-        snake_x = 0
-    elif snake_y < 0:
-        snake_y = display_height - snake_height
-    elif snake_y > display_height - snake_height:
-        snake_y = 0
+    def get_direction(self, direction):
+        self.direction = direction
 
-    for row in range(display_height // display_pixel):
-        for col in range(display_width // display_pixel):
-            if (row + col) % 2 == 0:
-                color = color_thistle
-            else:
-                color = color_silver
-            pygame.draw.rect(display, color,
-                             (0 + display_pixel * col, 0 + display_pixel * row, display_pixel, display_pixel))
+class Food:
+    """Класс Еды"""
+    def __init__(self, DISPLAY, PIXEL):
+        self.DISPLAY = DISPLAY
 
-    if food_x == snake_x and food_y == snake_y:
-        food_x = randrange(0, 39) * display_pixel
-        food_y = randrange(0, 39) * display_pixel
-        display_fps += 1
-        snake_len += 1
-        score += 10
-        print('lvl {0}'.format(score))
-    display.blit(pygame.font.SysFont(None, 20).render('Очки: {0}'.format(score), True, color_red), (0, 0))
-    pygame.display.update()
-    snake_head = [snake_x, snake_y]
-    snake_body.append(snake_head)
-    if len(snake_body) > snake_len:
-        del snake_body[0]
-    for snake_block in snake_body[:-1]:
-        if snake_block == snake_head:
-            f = True
-            while f:
-                display.blit(
-                    pygame.font.SysFont(None, 40).render('Нажмите r для рестарта, Esc для выхода', True, color_red),
-                    (display_width / 5, display_height / 2))
-                pygame.display.update()
-                check_event()
+        self.foods = [
+            pg.image.load('images/apple.png'),
+            pg.image.load('images/orange.png')
+        ]
+        self.food = random.choice(self.foods)
 
-    for snake_block in snake_body:
-        pygame.draw.rect(display, color_lime, (snake_block[0], snake_block[1], snake_width, snake_height))
+        self.pos_x = random.randrange(0, pg.display.get_window_size()[0], PIXEL)
+        self.pos_y = random.randrange(0, pg.display.get_window_size()[1], PIXEL)
 
-    pygame.display.update()
+    def draw(self):
+        self.DISPLAY.blit(self.food, (self.pos_x, self.pos_y))
 
-    pygame.draw.rect(display, color_red, (food_x, food_y, display_pixel, display_pixel))
 
-    pygame.display.flip()
-    pygame.time.Clock().tick(display_fps)
+
+
+
+def main():
+    app = App()
+    app.run()
+
+
+if __name__ == '__main__':
+    main()
