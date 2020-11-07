@@ -85,15 +85,24 @@ class Snake:
 
         # Голова змейки
         self.head = [self.pos_x, self.pos_y]
-
         # Тело змейки
         self.body = []
+        # Длинна змейки
+        self.length = 1
 
         # Направление змейки
         self.direction = 'up'
 
     def move(self):
+        """Передвигает змейку"""
+        self.check_direction()
+        self.check_collision_wall()
 
+    def check_direction(self):
+        """
+        Проверяет направление змейки
+        :return: None
+        """
         if self.direction == 'up':
             self.pos_y -= self.SIZE
         elif self.direction == 'down':
@@ -103,8 +112,11 @@ class Snake:
         elif self.direction == 'right':
             self.pos_x += self.SIZE
 
-        # Проверка на пересечении с стенами,
-        # в случае если змейка врезается в стенку, она телепортируется к противоположной стенке
+    def check_collision_wall(self):
+        """
+        Проверка на столкновение змейки со стеной,
+        в случае, если она врежется в стенку - телепортируется к противоположной стенке 
+        """
         if pg.display.get_window_size()[0] < self.pos_x + self.SIZE:
             self.pos_x = 0
         elif 0 > self.pos_x:
