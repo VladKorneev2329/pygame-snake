@@ -27,7 +27,7 @@ class App:
         self.snake = Snake(self.PIXEL)
 
         # Создание экземпляра Еды
-        self.food = Food(self.DISPLAY, self.PIXEL)
+        self.food = Food(self.DISPLAY, self.PIXEL, self.snake)
 
     def run(self):
         """Главный цикл приложения"""
@@ -62,6 +62,8 @@ class App:
         for pos_y in range(0, self.WIDTH, self.PIXEL):
             pg.draw.line(self.DISPLAY, (22, 22, 22), (0, pos_y), (self.WIDTH, pos_y))
 
+        # Проверка на пересечении координат еды и змейки
+        self.food.is_collision()
         # Отрисовка еды
         self.food.draw()
 
@@ -117,20 +119,40 @@ class Snake:
 class Food:
     """Класс Еды"""
 
-    def __init__(self, DISPLAY, PIXEL):
+    def __init__(self, DISPLAY, PIXEL, snake):
         self.DISPLAY = DISPLAY
+        self.PIXEL = PIXEL
+        self.snake = snake
 
-        self.foods = [
+        self.icons = [
             pg.image.load('images/apple.png'),
             pg.image.load('images/orange.png')
         ]
-        self.food = random.choice(self.foods)
+        # Создание переменных
+        self.pos_x = self.pos_y = self.icon = None
 
-        self.pos_x = random.randrange(0, pg.display.get_window_size()[0], PIXEL)
-        self.pos_y = random.randrange(0, pg.display.get_window_size()[1], PIXEL)
+        self.random_icon()
+        self.random_pos()
+
 
     def draw(self):
-        self.DISPLAY.blit(self.food, (self.pos_x, self.pos_y))
+        """Отрисовка еды в координатах self.pos_x, self.pos_y"""
+        self.DISPLAY.blit(self.icon, (self.pos_x, self.pos_y))
+
+    def random_icon(self):
+        """Выбор рандомной иконки еды"""
+        self.icon = random.choice(self.icons)
+
+    def random_pos(self):
+        """Генерация рандомных координат self.pos_x, self.pos_y"""
+        self.pos_x = random.randrange(0, pg.display.get_window_size()[0], self.PIXEL)
+        self.pos_y = random.randrange(0, pg.display.get_window_size()[1], self.PIXEL)
+
+    def is_collision(self):
+        """Проверка на пересечении головы змейки и еды"""
+        if self.snake.pos_x == self.pos_x and \
+                self.snake.pos_y == self.pos_y:
+            self.random_pos()
 
 
 def main():
