@@ -95,6 +95,16 @@ class Snake:
         elif self.direction == 'right':
             self.pos_x += self.SIZE
 
+        # Проверка на пересечении с стенами,
+        # в случае если змейка врезается в стенку, она телепортируется к противоположной стенке
+        if pg.display.get_window_size()[0] < self.pos_x + self.SIZE:
+            self.pos_x = 0
+        elif 0 > self.pos_x:
+            self.pos_x = pg.display.get_window_size()[0] - self.SIZE
+        elif pg.display.get_window_size()[1] < self.pos_y + self.SIZE:
+            self.pos_y = 0
+        elif 0 > self.pos_y:
+            self.pos_y = pg.display.get_window_size()[1] - self.SIZE
 
     def draw(self, DISPLAY):
         self.move()
@@ -103,8 +113,10 @@ class Snake:
     def get_direction(self, direction):
         self.direction = direction
 
+
 class Food:
     """Класс Еды"""
+
     def __init__(self, DISPLAY, PIXEL):
         self.DISPLAY = DISPLAY
 
@@ -119,9 +131,6 @@ class Food:
 
     def draw(self):
         self.DISPLAY.blit(self.food, (self.pos_x, self.pos_y))
-
-
-
 
 
 def main():
