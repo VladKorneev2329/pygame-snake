@@ -79,12 +79,18 @@ class Snake:
         self.SIZE = PIXEL
         self.COLOR = (0, 230, 118)
 
-        # Координаты змейки
-        self.pos_x = 0
-        self.pos_y = 0
+        # Координаты змейки в центре экрана
+        self.pos_x = pg.display.get_window_size()[0] // 2
+        self.pos_y = pg.display.get_window_size()[1] // 2
+
+        # Голова змейки
+        self.head = [self.pos_x, self.pos_y]
+
+        # Тело змейки
+        self.body = []
 
         # Направление змейки
-        self.direction = 'down'
+        self.direction = 'up'
 
     def move(self):
 
@@ -134,7 +140,6 @@ class Food:
         self.random_icon()
         self.random_pos()
 
-
     def draw(self):
         """Отрисовка еды в координатах self.pos_x, self.pos_y"""
         self.DISPLAY.blit(self.icon, (self.pos_x, self.pos_y))
@@ -152,6 +157,7 @@ class Food:
         """Проверка на пересечении головы змейки и еды"""
         if self.snake.pos_x == self.pos_x and \
                 self.snake.pos_y == self.pos_y:
+            self.random_icon()
             self.random_pos()
 
 
